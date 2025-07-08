@@ -10,6 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from .base import ChromaRAG
 from src.utils.paper_chunks import papers_to_chunks
+from src.utils import get_logger
 
 
 class PaperRAG(ChromaRAG):
@@ -43,7 +44,7 @@ class PaperRAG(ChromaRAG):
             return improved_query
             
         except Exception as e:
-            print(f"Error enhancing query with OpenAI: {e}")
+            self.logger.error(f"Error enhancing query with OpenAI: {e}")
             # Fallback to original query
             return user_query
     
@@ -87,12 +88,12 @@ class PaperRAG(ChromaRAG):
             return answer
             
         except Exception as e:
-            print(f"Error generating answer with OpenAI: {e}")
+            self.logger.error(f"Error generating answer with OpenAI: {e}")
             return f"Error generating answer: {e}"
     
     def _load_data(self) -> None:
         """Load paper chunks into the collection"""
-        print("Loading paper chunks...")
+        self.logger.info("Loading paper chunks...")
         
         # Get paper chunks
         self.paper_chunks = papers_to_chunks()
@@ -116,9 +117,9 @@ class PaperRAG(ChromaRAG):
                         ids=new_ids,
                         metadatas=new_metadatas
                     )
-                    print(f"✓ Added {len(new_ids)} new chunks for {paper}")
+                    self.logger.info(f"Added {len(new_ids)} new chunks for {paper}")
                 else:
-                    print(f"✓ All chunks for {paper} already exist in collection")
+                    self.logger.info(f"All chunks for {paper} already exist in collection")
             except:
                 # If get() fails, add all chunks
                 self.collection.add(
@@ -126,6 +127,6 @@ class PaperRAG(ChromaRAG):
                     ids=chunk_ids,
                     metadatas=[{"paper": paper, "chunk_index": i} for i in range(len(chunks))]
                 )
-                print(f"✓ Added all chunks for {paper}")
+                self.logger.info(f"Added all chunks for {paper}")
         
-        print("✓ Paper data loading complete!")
+        self.logger.info("Paper data loading complete!")

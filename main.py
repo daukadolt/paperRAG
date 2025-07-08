@@ -14,6 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 import chromadb
 from dotenv import load_dotenv
 from src.rag.PaperRAG import PaperRAG
+from src.utils import get_logger
 
 
 class PaperRAGApp:
@@ -21,11 +22,12 @@ class PaperRAGApp:
     
     def __init__(self):
         self.rag_system: Optional[PaperRAG] = None
+        self.logger = get_logger("PaperRAG.app")
     
     def setup(self) -> bool:
         """Setup the RAG system"""
         try:
-            print("Setting up PaperRAG system...")
+            self.logger.info("Setting up PaperRAG system...")
             
             # Initialize ChromaDB client
             chroma_client = chromadb.PersistentClient(path="chroma")
@@ -38,6 +40,7 @@ class PaperRAGApp:
             return True
             
         except Exception as e:
+            self.logger.error(f"Error setting up system: {e}")
             print(f"❌ Error setting up system: {e}")
             return False
     
@@ -46,6 +49,7 @@ class PaperRAGApp:
         if not self.rag_system:
             return "System not initialized. Please run setup() first."
         
+        self.logger.info(f"Processing query: '{user_query}'")
         print(f"\n🔍 Processing query: '{user_query}'")
         print("-" * 50)
         
@@ -53,6 +57,7 @@ class PaperRAGApp:
             answer = self.rag_system.gen(user_query)
             return answer
         except Exception as e:
+            self.logger.error(f"Error processing query: {e}")
             return f"❌ Error processing query: {e}"
     
     def run_interactive(self):
@@ -91,11 +96,12 @@ class PaperRAGApp:
                 print("=" * 60)
                 print(answer)
                 print("=" * 60)
-                
             except KeyboardInterrupt:
+                self.logger.info("User interrupted the session")
                 print("\n\n👋 Goodbye!")
                 break
             except Exception as e:
+                self.logger.error(f"Unexpected error: {e}")
                 print(f"\n❌ Error: {e}")
                 print("Please try again.")
 

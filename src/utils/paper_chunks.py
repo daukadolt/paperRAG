@@ -14,22 +14,25 @@ from chromadb import QueryResult
 
 from dotenv import load_dotenv
 from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
+from .logger import get_logger
 
 PATH_TO_PAPERS = "assets/papers"
 CACHE_FILE = "assets/paper_chunks_cache.json"
 
 def papers_to_chunks(chunk_size=800, chunk_overlap=200) -> Dict[str, List[str]]:
+    logger = get_logger("PaperRAG.paper_chunks")
+    
     # Check if cache exists and is valid
     cache_data = _load_cache(chunk_size, chunk_overlap)
     if cache_data:
-        print("Using cached chunks - no recomputation needed!")
+        logger.info("Using cached chunks - no recomputation needed!")
         return cache_data
     
-    print("Cache not found or invalid - processing PDFs...")
+    logger.info("Cache not found or invalid - processing PDFs...")
     out = defaultdict(list)
     for file in glob.glob(f'{PATH_TO_PAPERS}/*.pdf'):
         try:
-            print(f"Reading: {os.path.basename(file)}")
+            logger.info(f"Reading: {os.path.basename(file)}")
             
             # Open PDF file in binary mode
             with open(file, 'rb') as f:
@@ -40,7 +43,7 @@ def papers_to_chunks(chunk_size=800, chunk_overlap=200) -> Dict[str, List[str]]:
                 for page in pdf_reader.pages:
                     text += page.extract_text() + "\n"
                 
-                print(f"Extracted {len(text)} characters from {len(pdf_reader.pages)} pages")
+                logger.info(f"Extracted {len(text)} characters from {len(pdf_reader.pages)} pages")
                 
                 # Create chunks with overlap
                 chunks = []
@@ -60,7 +63,7 @@ def papers_to_chunks(chunk_size=800, chunk_overlap=200) -> Dict[str, List[str]]:
                 out[os.path.basename(file)] = chunks
 
         except Exception as e:
-            print(f"Error reading {file}: {e}")
+            logger.error(f"Error reading {file}: {e}")
     
     result = dict(out)
     
@@ -103,7 +106,8 @@ def _load_cache(chunk_size: int, chunk_overlap: int) -> Dict[str, List[str]] | N
         return cache.get('chunks', {})
         
     except Exception as e:
-        print(f"Error loading cache: {e}")
+        logger = get_logger("PaperRAG.paper_chunks")
+        logger.error(f"Error loading cache: {e}")
         return None
 
 
@@ -122,18 +126,20 @@ def _save_cache(chunks: Dict[str, List[str]], chunk_size: int, chunk_overlap: in
         'file_hashes': file_hashes
     }
     
+    logger = get_logger("PaperRAG.paper_chunks")
     try:
         with open(CACHE_FILE, 'w') as f:
             json.dump(cache_data, f, indent=2)
-        print(f"Cache saved to {CACHE_FILE}")
+        logger.info(f"Cache saved to {CACHE_FILE}")
     except Exception as e:
-        print(f"Error saving cache: {e}")
+        logger.error(f"Error saving cache: {e}")
 
 
 if __name__ == "__main__":
     # Test the paper chunking functionality
     load_dotenv()
     paper_chunks = papers_to_chunks()
-    print(f"Processed {len(paper_chunks)} papers")
+    logger = get_logger("PaperRAG.paper_chunks")
+    logger.info(f"Processed {len(paper_chunks)} papers")
     for paper, chunks in paper_chunks.items():
-        print(f"  {paper}: {len(chunks)} chunks")
+        logger.info(f"  {paper}: {len(chunks)} chunks")
