@@ -124,7 +124,7 @@ def save_cache(chunks: Dict[str, List[str]], chunk_size: int, chunk_overlap: int
 
 if __name__ == "__main__":
     paper_chunks = papers_to_chunks()
-    chroma_client = chromadb.Client()
+    chroma_client = chromadb.PersistentClient()
     collection = chroma_client.create_collection(name="paper_collection")
     for paper in paper_chunks:
         chunks = paper_chunks[paper]
