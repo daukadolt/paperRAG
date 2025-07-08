@@ -258,3 +258,5 @@ src/main/resources/dist/*
 /src/main/kotlin/com/sourcegraph/cody/agent/protocol_generated/*
 
 *.pdf
+
+chroma/
