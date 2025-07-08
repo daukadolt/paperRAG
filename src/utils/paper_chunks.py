@@ -15,12 +15,12 @@ from chromadb import QueryResult
 from dotenv import load_dotenv
 from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-PATH_TO_PAPERS = "../../assets/papers"
-CACHE_FILE = "../../assets/paper_chunks_cache.json"
+PATH_TO_PAPERS = "assets/papers"
+CACHE_FILE = "assets/paper_chunks_cache.json"
 
 def papers_to_chunks(chunk_size=800, chunk_overlap=200) -> Dict[str, List[str]]:
     # Check if cache exists and is valid
-    cache_data = load_cache(chunk_size, chunk_overlap)
+    cache_data = _load_cache(chunk_size, chunk_overlap)
     if cache_data:
         print("Using cached chunks - no recomputation needed!")
         return cache_data
@@ -65,7 +65,7 @@ def papers_to_chunks(chunk_size=800, chunk_overlap=200) -> Dict[str, List[str]]:
     result = dict(out)
     
     # Save to cache
-    save_cache(result, chunk_size, chunk_overlap)
+    _save_cache(result, chunk_size, chunk_overlap)
     
     return result
 
@@ -78,7 +78,7 @@ def get_file_hash(filepath: str) -> str:
     return hashlib.md5(content.encode()).hexdigest()
 
 
-def load_cache(chunk_size: int, chunk_overlap: int) -> Dict[str, List[str]] | None:
+def _load_cache(chunk_size: int, chunk_overlap: int) -> Dict[str, List[str]] | None:
     """Load cached chunks if valid"""
     if not os.path.exists(CACHE_FILE):
         return None
@@ -107,7 +107,7 @@ def load_cache(chunk_size: int, chunk_overlap: int) -> Dict[str, List[str]] | No
         return None
 
 
-def save_cache(chunks: Dict[str, List[str]], chunk_size: int, chunk_overlap: int):
+def _save_cache(chunks: Dict[str, List[str]], chunk_size: int, chunk_overlap: int):
     """Save chunks to cache with file hashes"""
     # Calculate file hashes
     file_hashes = {}
