@@ -125,14 +125,57 @@ def save_cache(chunks: Dict[str, List[str]], chunk_size: int, chunk_overlap: int
 if __name__ == "__main__":
     paper_chunks = papers_to_chunks()
     chroma_client = chromadb.PersistentClient()
-    collection = chroma_client.create_collection(name="paper_collection")
+    
+    # Check if collection exists, create if it doesn't
+    try:
+        collection = chroma_client.get_collection(name="paper_collection")
+        print("Using existing collection: paper_collection")
+        collection_exists = True
+    except:
+        collection = chroma_client.create_collection(name="paper_collection")
+        print("Created new collection: paper_collection")
+        collection_exists = False
+    
+    # Add documents to collection (only if they don't already exist)
     for paper in paper_chunks:
         chunks = paper_chunks[paper]
-        collection.add(
-            documents=chunks,
-            ids=[f"{paper}_chunk_{i}" for i in range(len(chunks))],
-            metadatas=[{"paper": paper, "chunk_index": i} for i in range(len(chunks))]
-        )
+        chunk_ids = [f"{paper}_chunk_{i}" for i in range(len(chunks))]
+        
+        if collection_exists:
+            # Check which chunks already exist
+            try:
+                existing = collection.get(ids=chunk_ids)
+                existing_ids = set(existing['ids'])
+                new_ids = [id for id in chunk_ids if id not in existing_ids]
+                new_chunks = [chunks[i] for i, id in enumerate(chunk_ids) if id in new_ids]
+                new_metadatas = [{"paper": paper, "chunk_index": i} for i, id in enumerate(chunk_ids) if id in new_ids]
+                
+                if new_ids:
+                    collection.add(
+                        documents=new_chunks,
+                        ids=new_ids,
+                        metadatas=new_metadatas
+                    )
+                    print(f"Added {len(new_ids)} new chunks for {paper}")
+                else:
+                    print(f"All chunks for {paper} already exist in collection")
+            except:
+                # If get() fails, add all chunks
+                collection.add(
+                    documents=chunks,
+                    ids=chunk_ids,
+                    metadatas=[{"paper": paper, "chunk_index": i} for i in range(len(chunks))]
+                )
+                print(f"Added all chunks for {paper}")
+        else:
+            # New collection, add all chunks
+            collection.add(
+                documents=chunks,
+                ids=chunk_ids,
+                metadatas=[{"paper": paper, "chunk_index": i} for i in range(len(chunks))]
+            )
+            print(f"Added all chunks for {paper}")
+    
     query = "What is best way to design an agent?"
     results = collection.query(
         query_texts=[query],
