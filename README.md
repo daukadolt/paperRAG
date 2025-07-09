@@ -2,6 +2,18 @@
 
 A clean, modular RAG (Retrieval-Augmented Generation) system for academic papers built with ChromaDB and OpenAI.
 
+## 📚 Paper Source
+
+This system is designed to work with papers from the **[LLM Agent Papers](https://github.com/zjunlp/LLMAgentPapers)** repository - a comprehensive collection of must-read papers on Large Language Model Agents. The repository contains papers covering:
+
+- 🤖 **Agent Systems**: Personality, Memory, Planning, Tool Use, RL Training
+- 🤖💬🤖 **Multi-Agent Systems**: Collaborative, Adversarial, and Casual Conversations  
+- 🪐 **Applications**: Real-world agent implementations
+- 🖼️ **Frameworks**: Development frameworks and tools
+- 🧰 **Resources**: Benchmarks, tool lists, and evaluation metrics
+
+Visit [LLM Agent Papers](https://github.com/zjunlp/LLMAgentPapers) to explore the full collection of papers and resources.
+
 ## Features
 
 - **Modular Design**: Clean base classes for easy extension and customization
