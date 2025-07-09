@@ -14,6 +14,35 @@ This system is designed to work with papers from the **[LLM Agent Papers](https:
 
 Visit [LLM Agent Papers](https://github.com/zjunlp/LLMAgentPapers) to explore the full collection of papers and resources.
 
+## ⚡ Performance Optimization
+
+With **200+ papers** in the collection, vectorization can be computationally intensive even on high-end hardware. For optimal performance, this system was developed using:
+
+### 🚀 Cloud GPU Processing
+```bash
+# DigitalOcean H100 GPU Droplet for vectorization
+doctl compute droplet create \
+    --image 191457505 \
+    --size 288 \
+    --region 4 \
+    --vpc-uuid a59c66ae-d131-49e6-a1b4-88535df82c14 \
+    --tag-names '' \
+    ml-ai-ubuntu-gpu-h100x1-80gb-nyc2
+```
+
+**Why H100?** The NVIDIA H100 GPU provides:
+- **80GB HBM3 Memory** for large-scale vector operations
+- **4th Gen Tensor Cores** for accelerated AI workloads  
+- **Multi-Instance GPU (MIG)** for efficient resource utilization
+- **PCIe 5.0** for high-speed data transfer
+
+### 🔄 Workflow
+1. **Cloud Processing**: Vectorize papers on H100 GPU droplet
+2. **Local Development**: SSH copy vectorized data to local machine
+3. **Fast Queries**: Run RAG queries locally with pre-computed embeddings
+
+This approach ensures rapid development cycles while leveraging cloud GPU power for the heavy computational work.
+
 ## Features
 
 - **Modular Design**: Clean base classes for easy extension and customization
